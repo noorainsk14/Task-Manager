@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
       required: [true, "Name is required."],
       trim: true,
@@ -40,7 +40,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // Compare password during login
-userSchema.methods.isPasswordCorrect = async function (password) {
+userSchema.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 

@@ -4,18 +4,32 @@ import cors from "cors";
 
 const app = express();
 
+// CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
   })
 );
 
-app.use(express.json({limit: "16kb"}))
+// Parsers
+app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
+// Import routes
+import userRouter from "./routes/user.route.js";
+import taskRouter from "./routes/task.route.js";
 
+// Import global error handler
+import errorHandler from "./middleware/errorHandler.js";
 
-export {app}
+// Route declaration
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tasks", taskRouter);
+
+// Global error handler — keep this LAST
+app.use(errorHandler);
+
+export { app };
