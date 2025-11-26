@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
  //ADMIN: Create & Assign Task
  
-export const createTask = asyncHandler(async (req, res) => {
+export const createTask = asyncHandler(async (req, res, next) => {
   const { title, description, dueDate, priority, assignedTo } = req.body;
 
   if (!title || !assignedTo) {
@@ -30,7 +30,7 @@ export const createTask = asyncHandler(async (req, res) => {
 
  // USER: Get My Tasks
  
-export const getMyTasks = asyncHandler(async (req, res) => {
+export const getMyTasks = asyncHandler(async (req, res, next) => {
   const tasks = await Task.find({ assignedTo: req.user.id });
 
   return res
@@ -41,7 +41,7 @@ export const getMyTasks = asyncHandler(async (req, res) => {
 
  //ADMIN: Get All Tasks
  
-export const getAllTasks = asyncHandler(async (req, res) => {
+export const getAllTasks = asyncHandler(async (req, res, next) => {
   const tasks = await Task.find().populate("assignedTo", "username email");
 
   return res
@@ -52,7 +52,7 @@ export const getAllTasks = asyncHandler(async (req, res) => {
 
 //ADMIN: Update Entire Task (title, desc, priority)
  
-export const updateTask = asyncHandler(async (req, res) => {
+export const updateTask = asyncHandler(async (req, res, next) => {
   if (!mongoose.isValidObjectId(req.params.id)) {
    throw new ApiError(400, "Invalid task ID");
 }
@@ -72,7 +72,7 @@ export const updateTask = asyncHandler(async (req, res) => {
 
  // USER/ADMIN: Update ONLY Task Status
  
-export const updateTaskStatus = asyncHandler(async (req, res) => {
+export const updateTaskStatus = asyncHandler(async (req, res, next) => {
   const { status } = req.body;
 
   if (!status) throw new ApiError(400, "Status is required");
@@ -100,7 +100,7 @@ export const updateTaskStatus = asyncHandler(async (req, res) => {
 
  // ADMIN: Delete Task
  
-export const deleteTask = asyncHandler(async (req, res) => {
+export const deleteTask = asyncHandler(async (req, res, next) => {
   if (!mongoose.isValidObjectId(req.params.id)) {
    throw new ApiError(400, "Invalid task ID");
 }

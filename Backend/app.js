@@ -23,7 +23,7 @@ import userRouter from "./routes/user.route.js";
 import taskRouter from "./routes/task.route.js";
 
 // Import global error handler
-import errorHandler from "./middleware/errorHandler.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 // Route declaration
 app.use("/api/v1/users", userRouter);

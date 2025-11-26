@@ -2,40 +2,43 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {ApiError} from "../utils/ApiError.js"
 import User from "../models/User.model.js";
-import {generateAccessToken} from "../utils/cookies.js"
+import {generateAccessToken} from "../utils/token.js"
 import { accessCookieOptions } from "../utils/cookies.js";
 
 
 //Register new user
-const registerUser = asyncHandler(async(req, res) => {
-    const {username, email, password, role} = req.body;
+const registerUser = asyncHandler(async (req, res, next) => {
+  const { username, email, password, role } = req.body;
 
-    if(!username || !email || !password){
-        throw new ApiError(400, "All fields are required.")
-    }
+  if (!username || !email || !password) {
+    throw new ApiError(400, "All fields are required.");
+  }
 
-    const userExists = await User.findOne({email});
-    if(userExists){
-        throw new ApiError(409, "User already exists.")
-    }
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    throw new ApiError(409, "User already exists.");
+  }
 
+  const user = await User.create({
+    username,
+    email,
+    password,
+    role: role || "user"
+  });
 
-    const user = await User.create({
-        username,
-        email,
-        password,
-        role: role || "user" //default is user
-    });
+  // Remove password field manually
+  const userObj = user.toObject();
+  delete userObj.password;
 
-    return res
+  return res
     .status(201)
-    .json(new ApiResponse(201, user, "User registered successfully."));
-
+    .json(new ApiResponse(201, userObj, "User registered successfully."));
 });
+
 
 //Login user
 
-const loginUser = asyncHandler(async(req, res) => {
+const loginUser = asyncHandler(async(req, res, next) => {
     const {email, password} = req.body;
 
     if(!email || !password){
@@ -68,7 +71,7 @@ const loginUser = asyncHandler(async(req, res) => {
     .json(new ApiResponse(200, {id: user._id, username: user.username, role: user.role}, "Login successful."))
 })
 
-const logoutUser = asyncHandler(async(req, res) => {
+const logoutUser = asyncHandler(async(req, res, next) => {
     res.clearCookie("accessToken");
     return res
   .status(200)
@@ -76,7 +79,7 @@ const logoutUser = asyncHandler(async(req, res) => {
 
 })
 
-const currentUser = asyncHandler(async(req, res) => {
+const currentUser = asyncHandler(async(req, res, next) => {
     if(!req.user) throw new ApiError(401, "Not authenticated")
 
         const user = await User.findById(req.user.id).select("-password");
