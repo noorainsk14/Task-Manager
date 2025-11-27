@@ -34,7 +34,7 @@ export default function Register() {
       await registerUser(form);
       navigate("/login");
       toast.success("User register successfull!");
-    } finally {
+    } catch (err) {
       setLoading(false);
       toast.error(err.response?.data?.message || "Registration failed");
     }
