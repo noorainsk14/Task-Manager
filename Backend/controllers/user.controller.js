@@ -87,4 +87,13 @@ const currentUser = asyncHandler(async(req, res, next) => {
         return res.status(200).json(new ApiResponse(200, user, "Current User"))
 })
 
-export {registerUser,loginUser,logoutUser,currentUser}
+const getAllUsers = asyncHandler(async (req, res, next) => {
+  const users = await User.find().select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "All users fetched successfully."));
+});
+
+
+export {registerUser,loginUser,logoutUser,currentUser,getAllUsers}

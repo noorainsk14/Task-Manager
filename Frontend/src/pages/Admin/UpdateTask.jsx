@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { createTaskApi } from "../../api/task.api";
-import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { updateTaskApi, getAllTasksApi } from "../../api/task.api";
 import Navbar from "@/components/Navbar";
-import UserSelect from "../../components/UserSelect";
-
 import {
   Card,
   CardHeader,
@@ -22,52 +20,71 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-export default function CreateTask() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState("medium");
-  const [assignedTo, setAssignedTo] = useState("");
+export default function UpdateTask() {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    priority: "medium",
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        const res = await getAllTasksApi(); // fetch all tasks
+        const task = res.data.data.find((t) => t._id === id);
+        if (!task) throw new Error("Task not found");
+
+        setForm({
+          title: task.title,
+          description: task.description || "",
+          dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+          priority: task.priority || "medium",
+        });
+      } catch (err) {
+        toast.error(err.message || "Failed to load task");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTask();
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createTaskApi({
-        title,
-        description,
-        dueDate,
-        priority,
-        assignedTo,
-      });
-      toast.success("Task created successfully!");
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setPriority("medium");
-      setAssignedTo("");
+      await updateTaskApi(id, form);
+      toast.success("Task updated successfully!");
       navigate("/admin/tasks");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
     }
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-[#313647]">
-      <Navbar />
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
 
-      <div className="flex-1 flex items-center justify-center p-4">
+  return (
+    <div className="min-h-screen flex flex-col bg-[#222831]">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center p-6">
         <Card className="w-full max-w-lg p-6 shadow-2xl rounded-2xl bg-[#3B4252] border border-gray-600 text-white">
           <CardHeader>
-            <CardTitle>Create Task</CardTitle>
+            <CardTitle>Update Task</CardTitle>
             <CardDescription className="text-gray-300">
-              Fill in the details below to create a new task
+              Update the task details below
             </CardDescription>
           </CardHeader>
-
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid gap-2">
@@ -76,11 +93,10 @@ export default function CreateTask() {
                 </Label>
                 <Input
                   id="title"
-                  placeholder="Task Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="bg-[#2E3440] border-gray-600 text-white"
+                  required
                 />
               </div>
 
@@ -90,10 +106,11 @@ export default function CreateTask() {
                 </Label>
                 <textarea
                   id="description"
-                  placeholder="Add description..."
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
                   className="bg-[#2E3440] border border-gray-600 text-white w-full px-3 py-2 rounded-lg min-h-[100px]"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
 
@@ -104,15 +121,22 @@ export default function CreateTask() {
                 <Input
                   id="dueDate"
                   type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  value={form.dueDate}
+                  onChange={(e) =>
+                    setForm({ ...form, dueDate: e.target.value })
+                  }
                   className="bg-[#2E3440] border-gray-600 text-white"
                 />
               </div>
 
               <div className="grid gap-2">
                 <Label className="text-white">Priority</Label>
-                <Select value={priority} onValueChange={setPriority}>
+                <Select
+                  value={form.priority}
+                  onValueChange={(value) =>
+                    setForm({ ...form, priority: value })
+                  }
+                >
                   <SelectTrigger className="w-full mt-2 border border-gray-600 bg-[#2E3440] text-white">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
@@ -124,14 +148,18 @@ export default function CreateTask() {
                 </Select>
               </div>
 
-              <div className="grid gap-2">
-                <Label className="text-white">Assign To</Label>
-                <UserSelect value={assignedTo} onChange={setAssignedTo} />
-              </div>
-
-              <CardFooter className="flex-col gap-2 p-0 mt-4">
+              <CardFooter className="flex flex-col gap-2 p-0 mt-4">
                 <Button type="submit" className="w-full">
-                  Create Task
+                  Update Task
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-black"
+                  onClick={() => navigate("/admin/tasks")}
+                >
+                  Cancel
                 </Button>
               </CardFooter>
             </form>

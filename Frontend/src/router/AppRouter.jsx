@@ -11,6 +11,7 @@ import Dashboard from "../pages/Admin/Dashboard";
 import CreateTask from "../pages/Admin/CreateTask";
 import AdminTasks from "../pages/Tasks/AdminTasks";
 import MyTasks from "../pages/Tasks/MyTasks";
+import UpdateTask from "@/pages/Admin/UpdateTask";
 
 export default function AppRouter() {
   return (
@@ -56,6 +57,14 @@ export default function AppRouter() {
         element={
           <ProtectedRoute role="admin">
             <AdminTasks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/tasks/update/:id"
+        element={
+          <ProtectedRoute role="admin">
+            <UpdateTask />
           </ProtectedRoute>
         }
       />

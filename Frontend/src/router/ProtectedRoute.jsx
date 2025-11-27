@@ -1,16 +1,18 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 export default function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth();
 
-  // Show loading UI until auth state is ready
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <div className="flex items-center bg-[#44444E] justify-center h-screen">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
 
-  // If user not logged in → redirect
   if (!user) return <Navigate to="/login" replace />;
 
-  // If role is required and user role doesn't match → redirect
   if (role && user.role !== role) return <Navigate to="/" replace />;
 
   return children;

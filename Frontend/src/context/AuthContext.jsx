@@ -11,7 +11,7 @@ export default function AuthProvider({ children }) {
   // Load logged-in user on refresh
   useEffect(() => {
     getCurrentUser()
-      .then(res => setUser(res.data.data))
+      .then((res) => setUser(res.data.data))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);

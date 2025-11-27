@@ -1,5 +1,5 @@
 import express from "express";
-import { currentUser, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
+import { currentUser, getAllUsers, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 import {verifyAccessToken} from "../middlewares/verifyAccessToken.js";
 
 import {
@@ -31,5 +31,8 @@ router.post("/logout", verifyAccessToken, logoutUser);
 
 // Get current logged-in user
 router.get("/current-user", verifyAccessToken, currentUser);
+
+// Get All user
+router.get("/all-users", verifyAccessToken, getAllUsers);
 
 export default router;
