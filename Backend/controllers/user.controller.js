@@ -7,6 +7,7 @@ import { accessCookieOptions } from "../utils/cookies.js";
 
 // Register user
 const registerUser = asyncHandler(async (req, res) => {
+  console.log("Register request body:", req.body);
   const { username, email, password, role } = req.body;
 
   if (!username || !email || !password) {
