@@ -4,10 +4,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-
- //ADMIN: Create & Assign Task
- 
-export const createTask = asyncHandler(async (req, res, next) => {
+// ADMIN: Create task
+export const createTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, priority, assignedTo } = req.body;
 
   if (!title || !assignedTo) {
@@ -27,10 +25,8 @@ export const createTask = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(201, task, "Task created successfully"));
 });
 
-
- // USER: Get My Tasks
- 
-export const getMyTasks = asyncHandler(async (req, res, next) => {
+// USER: Get my tasks
+export const getMyTasks = asyncHandler(async (req, res) => {
   const tasks = await Task.find({ assignedTo: req.user.id });
 
   return res
@@ -38,10 +34,8 @@ export const getMyTasks = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, tasks, "My tasks fetched successfully"));
 });
 
-
- //ADMIN: Get All Tasks
- 
-export const getAllTasks = asyncHandler(async (req, res, next) => {
+// ADMIN: Get all tasks
+export const getAllTasks = asyncHandler(async (req, res) => {
   const tasks = await Task.find().populate("assignedTo", "username email");
 
   return res
@@ -49,13 +43,11 @@ export const getAllTasks = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, tasks, "All tasks fetched successfully"));
 });
 
+// ADMIN: Update entire task
+export const updateTask = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id))
+    throw new ApiError(400, "Invalid task ID");
 
-//ADMIN: Update Entire Task (title, desc, priority)
- 
-export const updateTask = asyncHandler(async (req, res, next) => {
-  if (!mongoose.isValidObjectId(req.params.id)) {
-   throw new ApiError(400, "Invalid task ID");
-}
   const task = await Task.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -69,22 +61,19 @@ export const updateTask = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, task, "Task updated successfully"));
 });
 
-
- // USER/ADMIN: Update ONLY Task Status
- 
-export const updateTaskStatus = asyncHandler(async (req, res, next) => {
+// USER + ADMIN: Update status only
+export const updateTaskStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
   if (!status) throw new ApiError(400, "Status is required");
-  if (!mongoose.isValidObjectId(req.params.id)) {
-   throw new ApiError(400, "Invalid task ID");
-}
+
+  if (!mongoose.isValidObjectId(req.params.id))
+    throw new ApiError(400, "Invalid task ID");
 
   const task = await Task.findById(req.params.id);
-
   if (!task) throw new ApiError(404, "Task not found");
 
-  // Only admin or the assigned user can update status
+  // Access control
   if (task.assignedTo.toString() !== req.user.id && req.user.role !== "admin") {
     throw new ApiError(403, "Not allowed to update status of this task");
   }
@@ -97,15 +86,12 @@ export const updateTaskStatus = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, task, "Task status updated"));
 });
 
+// ADMIN: Delete task
+export const deleteTask = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id))
+    throw new ApiError(400, "Invalid task ID");
 
- // ADMIN: Delete Task
- 
-export const deleteTask = asyncHandler(async (req, res, next) => {
-  if (!mongoose.isValidObjectId(req.params.id)) {
-   throw new ApiError(400, "Invalid task ID");
-}
   const task = await Task.findByIdAndDelete(req.params.id);
-
   if (!task) throw new ApiError(404, "Task not found");
 
   return res

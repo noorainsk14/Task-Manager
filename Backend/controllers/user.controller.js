@@ -1,13 +1,12 @@
-import {asyncHandler} from "../utils/asyncHandler.js"
-import {ApiResponse} from "../utils/ApiResponse.js"
-import {ApiError} from "../utils/ApiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 import User from "../models/User.model.js";
-import {generateAccessToken} from "../utils/token.js"
+import { generateAccessToken } from "../utils/token.js";
 import { accessCookieOptions } from "../utils/cookies.js";
 
-
-//Register new user
-const registerUser = asyncHandler(async (req, res, next) => {
+// Register user
+const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, role } = req.body;
 
   if (!username || !email || !password) {
@@ -15,9 +14,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
   }
 
   const userExists = await User.findOne({ email });
-  if (userExists) {
-    throw new ApiError(409, "User already exists.");
-  }
+  if (userExists) throw new ApiError(409, "User already exists.");
 
   const user = await User.create({
     username,
@@ -26,7 +23,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
     role: role || "user"
   });
 
-  // Remove password field manually
   const userObj = user.toObject();
   delete userObj.password;
 
@@ -35,59 +31,50 @@ const registerUser = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(201, userObj, "User registered successfully."));
 });
 
+// Login user
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-//Login user
+  if (!email || !password)
+    throw new ApiError(400, "Email & password are required.");
 
-const loginUser = asyncHandler(async(req, res, next) => {
-    const {email, password} = req.body;
+  const user = await User.findOne({ email });
+  if (!user) throw new ApiError(404, "User not found.");
 
-    if(!email || !password){
-        throw new ApiError(400, "Emails & password are required.")
-    }
+  const isMatch = await user.matchPassword(password);
+  if (!isMatch) throw new ApiError(401, "Invalid password.");
 
-    const user  = await User.findOne({email});
+  const payload = { id: user._id, role: user.role, username: user.username };
+  const accessToken = generateAccessToken(payload);
 
-    if(!user){
-        throw new ApiError(404, "User not found.")
-    }
+  res.cookie("accessToken", accessToken, accessCookieOptions());
 
-    const isMatch = await user.matchPassword(password);
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { id: user._id, username: user.username, role: user.role },
+      "Login successful."
+    )
+  );
+});
 
-    if(!isMatch){
-        throw new ApiError(401, "Invalid Password.")
-    }
+// Logout
+const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("accessToken", accessCookieOptions(true));
+  return res.status(200).json(new ApiResponse(200, null, "Logged out"));
+});
 
-    const payload = {id: user._id, role: user.role, username: user.username}
+// Get current user
+const currentUser = asyncHandler(async (req, res) => {
+  if (!req.user) throw new ApiError(401, "Not authenticated");
 
-    const accessToken = generateAccessToken(payload)
+  const user = await User.findById(req.user.id).select("-password");
 
-    //set cookie
-    res.cookie("accessToken", accessToken , accessCookieOptions())
+  return res.status(200).json(new ApiResponse(200, user, "Current user"));
+});
 
-    
-
-    return res
-    .status(200)
-    .json(new ApiResponse(200, {id: user._id, username: user.username, role: user.role}, "Login successful."))
-})
-
-const logoutUser = asyncHandler(async(req, res, next) => {
-    res.clearCookie("accessToken");
-    return res
-  .status(200)
-  .json(new ApiResponse(200, null, "Logged out"));
-
-})
-
-const currentUser = asyncHandler(async(req, res, next) => {
-    if(!req.user) throw new ApiError(401, "Not authenticated")
-
-        const user = await User.findById(req.user.id).select("-password");
-
-        return res.status(200).json(new ApiResponse(200, user, "Current User"))
-})
-
-const getAllUsers = asyncHandler(async (req, res, next) => {
+// Admin: get all users
+const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select("-password");
 
   return res
@@ -95,5 +82,10 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, users, "All users fetched successfully."));
 });
 
-
-export {registerUser,loginUser,logoutUser,currentUser,getAllUsers}
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  currentUser,
+  getAllUsers
+};
