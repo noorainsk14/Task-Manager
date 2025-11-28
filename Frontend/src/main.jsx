@@ -12,12 +12,12 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      {/* <AuthProvider>
-        <UsersProvider> */}
-      <App />
-      <Toaster position="bottom-right" />
-      {/* </UsersProvider>
-      </AuthProvider> */}
+      <AuthProvider>
+        <UsersProvider>
+          <App />
+          <Toaster position="bottom-right" />
+        </UsersProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -60,6 +60,7 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/admin/tasks/update/:id"
         element={

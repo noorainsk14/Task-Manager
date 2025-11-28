@@ -36,6 +36,8 @@ export default function Register() {
       toast.success("User register successfull!");
     } catch (err) {
       setLoading(false);
+      console.log(err);
+
       toast.error(err.response?.data?.message || "Registration failed");
     }
   };

@@ -13,7 +13,8 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
             {task.description || "No description"}
           </p>
           <div className="text-xs text-white/60 mt-2">
-            Assigned to: {task.assignedTo?.username || "Unassigned"}
+            Assigned to:{" "}
+            {task.assignedTo?.username || user.username || "Unassigned"}
           </div>
           <div className="text-xs text-white/60 mt-1">
             Priority: <span className="font-medium">{task.priority}</span>

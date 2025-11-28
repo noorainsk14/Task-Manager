@@ -1,8 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://taskmanager-ytu2.onrender.com/api/v1",  
+  baseURL:  "http://localhost:8000/api/v1"  ,  
   withCredentials: true 
 });
 
 export default api;
+
+
+// import.meta.env.VITE_API_BASE_URL ||

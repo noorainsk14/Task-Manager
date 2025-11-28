@@ -31,6 +31,8 @@ export function useTasks() {
       const res = await getAllTasksApi();
       setTasks(res.data.data || []);
     } catch (err) {
+      console.log(err);
+
       toast.error("Failed to load tasks");
     } finally {
       setLoading(false);
