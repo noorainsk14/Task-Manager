@@ -1,16 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getAllUsers } from "../api/user.api";
-import { useAuth } from "../hooks/useAuth"; // <-- import auth
+import { useAuth } from "../hooks/useAuth";
 
 const UsersContext = createContext();
 
 export const UsersProvider = ({ children }) => {
-  const { user } = useAuth(); // <-- current logged user
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
-    if (!user) {
+    // Only fetch if user exists and is admin
+    if (!user || user.role !== "admin") {
       setUsers([]);
       setLoadingUsers(false);
       return;
@@ -20,15 +21,16 @@ export const UsersProvider = ({ children }) => {
       try {
         const data = await getAllUsers();
         setUsers(data);
-      } catch (error) {
-        console.error("Failed to load users:", error);
+      } catch (err) {
+        console.error("Failed to load users:", err);
+        setUsers([]);
       } finally {
         setLoadingUsers(false);
       }
     };
 
     fetchUsers();
-  }, [user]); // re-run when login/logout happens
+  }, [user]);
 
   return (
     <UsersContext.Provider value={{ users, loadingUsers }}>

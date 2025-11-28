@@ -25,15 +25,15 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      // Step 1: Login (backend sets JWT cookie)
+      // Step 1: Login (backend sets cookie)
       await loginUser(form);
 
-      // Step 2: Fetch current user after login
+      // Step 2: Fetch current user
       const res = await getCurrentUser();
       setUser(res.data.data);
 
       toast.success("Logged in successfully!");
-      navigate("/"); // redirect to home or dashboard
+      navigate("/"); // redirect
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     }
@@ -42,7 +42,6 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col bg-[#313647]">
       <Navbar />
-
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-6 shadow-2xl rounded-2xl bg-[#3B4252] border border-gray-600">
           <CardHeader className="text-center">
@@ -53,7 +52,6 @@ export default function Login() {
               Enter your email and password to continue
             </CardDescription>
           </CardHeader>
-
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="flex flex-col gap-6">
@@ -73,7 +71,6 @@ export default function Login() {
                     required
                   />
                 </div>
-
                 <div className="grid gap-2">
                   <Label htmlFor="password" className="text-gray-200">
                     Password
@@ -91,12 +88,10 @@ export default function Login() {
                   />
                 </div>
               </div>
-
               <CardFooter className="flex-col gap-2 p-0 mt-4">
                 <Button type="submit" className="w-full">
                   Login
                 </Button>
-
                 <Button
                   variant="link"
                   className="text-white"

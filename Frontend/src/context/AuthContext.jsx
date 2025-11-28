@@ -9,10 +9,18 @@ export default function AuthProvider({ children }) {
 
   // Load logged-in user on page refresh
   useEffect(() => {
-    getCurrentUser()
-      .then((res) => setUser(res.data.data))
-      .catch(() => setUser(null)) // if not logged in, set null
-      .finally(() => setLoading(false));
+    const fetchUser = async () => {
+      try {
+        const res = await getCurrentUser(); // cookie-based JWT
+        setUser(res.data.data);
+      } catch (err) {
+        setUser(null); // not logged in
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   return (
