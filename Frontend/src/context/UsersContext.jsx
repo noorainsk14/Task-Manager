@@ -10,7 +10,6 @@ export const UsersProvider = ({ children }) => {
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
-    // Only fetch if user exists and is admin
     if (!user || user.role !== "admin") {
       setUsers([]);
       setLoadingUsers(false);

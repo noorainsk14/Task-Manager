@@ -1,30 +1,13 @@
-import { createContext, useState, useEffect } from "react";
-import { getCurrentUser } from "../api/user.api";
+import { createContext, useState } from "react";
 
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load logged-in user on page refresh
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await getCurrentUser(); // cookie-based JWT
-        setUser(res.data.data);
-      } catch (err) {
-        setUser(null); // not logged in
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const [user, setUser] = useState(null); // logged-in user info
+  const [loading, setLoading] = useState(true); // app-level loading for auth
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, setLoading }}>
       {children}
     </AuthContext.Provider>
   );
