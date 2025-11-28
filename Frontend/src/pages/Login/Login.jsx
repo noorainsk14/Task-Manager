@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser } from "../../api/user.api";
+import { loginUser, getCurrentUser } from "../../api/user.api";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +25,15 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await loginUser(form);
+      // Step 1: Login (backend sets JWT cookie)
+      await loginUser(form);
+
+      // Step 2: Fetch current user after login
+      const res = await getCurrentUser();
       setUser(res.data.data);
-      toast.success("Logged in!");
-      navigate("/");
+
+      toast.success("Logged in successfully!");
+      navigate("/"); // redirect to home or dashboard
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     }
